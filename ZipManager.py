@@ -49,6 +49,7 @@ if __name__ == "__main__":
     try:
         if file_path:
             unzip(file_path, temp_dir)
+            os.startfile(temp_dir)
             input("Invio per procedere")
             rezip(temp_dir, file_path)
             
