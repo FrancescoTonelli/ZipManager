@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import zipfile
 import os
-import subprocess
+import shutil
 
 def select():
     root = tk.Tk()
@@ -15,7 +15,7 @@ def select():
 
     return file_path
 
-def open_up(file_path, temp_dir):
+def unzip(file_path, temp_dir):
     os.makedirs(temp_dir, exist_ok=True)
     
     try:
@@ -23,14 +23,34 @@ def open_up(file_path, temp_dir):
     except:
         raise Exception("Not a .zip file")
 
+def rezip(folder_path, replace_path):
+    zip_path=r'.'
+    if not os.path.isdir(folder_path):
+        raise ValueError("La cartella specificata non esiste o non è valida.")
+    
+    # Determina il nome del file zip basato sulla cartella di origine
+    zip_filename = os.path.basename(folder_path) + '.zip'
+    zip_path = os.path.join(zip_path, zip_filename)
+    
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, _, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                zipf.write(file_path, os.path.relpath(file_path, folder_path))
+    if os.path.exists(replace_path):
+        os.remove(replace_path)
+    os.rename(zip_path, replace_path)
+    shutil.rmtree(folder_path)
+
 if __name__ == "__main__":
     temp_dir = ".\\ZipManagerTemp\\"
     file_path = select()
     
     try:
         if file_path:
-            open_up(file_path, temp_dir)
-            os.startfile(temp_dir)  
+            unzip(file_path, temp_dir)
+            input("Invio per procedere")
+            rezip(temp_dir, file_path)
             
         else:
             raise Exception("No file selected")
